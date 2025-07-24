@@ -1,0 +1,13 @@
+required_libraries = [
+    "pandas",
+    "numpy",
+    "scikit-learn",
+    "matplotlib",
+    "seaborn",
+    "xgboost",
+    "lightgbm",
+    "shap",
+    "jupyter",
+    "joblib",
+    "streamlit"
+]
