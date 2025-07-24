@@ -50,4 +50,3 @@ insurance-risk-prediction/
 
 **Author:** Daniel E. Marulanda  
 **Contact:** dem334@msstate.edu
-'''
