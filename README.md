@@ -42,12 +42,12 @@ insurance-risk-prediction/
 ├── src/               # Feature engineering & training scripts
 ├── models/            # Trained models
 ├── reports/           # Evaluation and plots
-├── requirements.txt   # Project dependencies
+├── requirements.txt   # Project library dependencies
 └── README.md
 ```
 
 ---
 
-**Author:** [Daniel E. Marulanda]  
-**Contact:** [dem334@msstate.edu]
+**Author:** Daniel E. Marulanda  
+**Contact:** dem334@msstate.edu
 '''
