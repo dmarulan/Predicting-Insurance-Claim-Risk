@@ -11,7 +11,7 @@ except ImportError:
 if IN_COLAB:
     from google.colab import drive
     drive.mount('/content/drive')
-    BASE_PATH = '/content/drive/MyDrive/your_project_directory'
+    BASE_PATH = '/content/drive/MyDrive/Insurance_Claims_Porto_Seguro'
 else:
     BASE_PATH = '.'
 
