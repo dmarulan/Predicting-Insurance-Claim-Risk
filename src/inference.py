@@ -1,33 +1,38 @@
 import pandas as pd
 import joblib
-from sklearn.preprocessing import StandardScaler
+from src.preprocess.cleaning import clean_data
 
-def load_model(model_path):
-    """Load a trained model from disk."""
-    return joblib.load(model_path)
 
-def preprocess_input(data, feature_columns, scaler_path=None):
-    """Preprocess input data before inference."""
-    X = data[feature_columns].copy()
+def run_inference(model_path: str, test_path: str, output_path: str = "predictions.csv"):
+    """
+    Loads the trained model and performs inference on test data.
 
-    if scaler_path:
-        scaler = joblib.load(scaler_path)
-        X = scaler.transform(X)
+    Args:
+        model_path (str): Path to the trained model .pkl file.
+        test_path (str): Path to the test CSV file.
+        output_path (str): File path where predictions will be saved.
+    """
+    print("[INFO] Loading test dataset...")
+    test_df = pd.read_csv(test_path)
 
-    return X
+    # Creating a dummy train DataFrame for cleaning structure
+    dummy_train_df = pd.DataFrame(columns=test_df.columns.tolist() + ["target"])
 
-def predict(model, processed_data):
-    """Return predictions and prediction probabilities."""
-    predictions = model.predict(processed_data)
-    probabilities = model.predict_proba(processed_data)[:, 1]
-    return predictions, probabilities
+    print("[INFO] Cleaning test dataset...")
+    _, cleaned_test = clean_data(dummy_train_df, test_df)
 
-def predict_from_csv(model_path, csv_path, feature_columns, scaler_path=None):
-    """Run full prediction pipeline on data in CSV file."""
-    data = pd.read_csv(csv_path)
-    model = load_model(model_path)
-    processed = preprocess_input(data, feature_columns, scaler_path)
-    preds, probs = predict(model, processed)
-    data['prediction'] = preds
-    data['risk_score'] = probs
-    return data
+    print("[INFO] Loading trained model...")
+    model = joblib.load(model_path)
+
+    print("[INFO] Running predictions...")
+    predictions = model.predict(cleaned_test)
+
+    results = pd.DataFrame({
+        "id": test_df.index,
+        "prediction": predictions
+    })
+
+    results.to_csv(output_path, index=False)
+    print(f"[INFO] Predictions saved to {output_path}")
+
+    return results
