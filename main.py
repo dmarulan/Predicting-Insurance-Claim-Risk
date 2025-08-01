@@ -1,47 +1,62 @@
-import argparse
-from src import preprocess, model_training, inference
+import os
 
-def run_preprocessing(input_path, output_path):
-    print("Running data preprocessing...")
-    df = preprocess.load_and_clean_data(input_path)
-    df.to_csv(output_path, index=False)
-    print(f"Cleaned data saved to {output_path}")
+# Detect if running on Google Colab
+try:
+    import google.colab
+    IN_COLAB = True
+except ImportError:
+    IN_COLAB = False
 
-def run_training(train_path, model_path, scaler_path):
-    print("Running model training...")
-    df = preprocess.load_and_clean_data(train_path)
-    model, scaler, features = model_training.train_model(df)
-    model_training.save_model_and_scaler(model, scaler, features, model_path, scaler_path)
-    print(f"Model and scaler saved to {model_path}, {scaler_path}")
+# Mount Google Drive and set data path
+if IN_COLAB:
+    from google.colab import drive
+    drive.mount('/content/drive')
+    BASE_PATH = '/content/drive/MyDrive/Insurance_Claims_Porto_Seguro'
+else:
+    BASE_PATH = '.'
 
-def run_inference(csv_path, model_path, scaler_path, feature_columns):
-    print("Running inference...")
-    df = inference.predict_from_csv(model_path, csv_path, feature_columns, scaler_path)
-    print(df[['prediction', 'risk_score']].head())
+# Set paths for data and model output
+DATA_PATH = os.path.join(BASE_PATH, 'data')
+MODEL_OUTPUT_PATH = os.path.join(BASE_PATH, 'models')
+os.makedirs(MODEL_OUTPUT_PATH, exist_ok=True)
+
+TRAIN_PATH = os.path.join(DATA_PATH, 'train.csv')
+TEST_PATH = os.path.join(DATA_PATH, 'test.csv')
+
+# Import custom modules
+from src.preprocess.data_loader import load_data
+from src.preprocess.cleaning import clean_data
+from src.utils import evaluate_model
+from src.model_training import train_model
+from src.inference import make_predictions
 
 def main():
-    parser = argparse.ArgumentParser(description="ML Pipeline for Risk Prediction")
+    print("🚀 Starting Machine Learning pipeline...")
 
-    parser.add_argument('--mode', type=str, required=True,
-                        choices=['preprocess', 'train', 'predict'],
-                        help="Mode to run: preprocess / train / predict")
+    # Load data
+    print("📥 Loading data...")
+    df_train, df_test = load_data(TRAIN_PATH, TEST_PATH)
 
-    parser.add_argument('--input', type=str, help="Input CSV path")
-    parser.add_argument('--output', type=str, help="Output CSV path")
-    parser.add_argument('--model', type=str, default='models/risk_model.pkl', help="Model path")
-    parser.add_argument('--scaler', type=str, default='models/scaler.pkl', help="Scaler path")
-    parser.add_argument('--features', type=str, nargs='+', help="List of feature column names")
+    # Clean data
+    print("🧹 Cleaning data...")
+    df_train_cleaned, df_test_cleaned = clean_data(df_train, df_test)
 
-    args = parser.parse_args()
+    # Train model
+    print("🧠 Training model...")
+    model, X_valid, y_valid = train_model(df_train_cleaned)
 
-    if args.mode == 'preprocess':
-        run_preprocessing(args.input, args.output)
-    elif args.mode == 'train':
-        run_training(args.input, args.model, args.scaler)
-    elif args.mode == 'predict':
-        if not args.features:
-            raise ValueError("Feature columns are required for prediction.")
-        run_inference(args.input, args.model, args.scaler, args.features)
+    # Evaluate model
+    print("📊 Evaluating model...")
+    evaluate_model(model, X_valid, y_valid)
+
+    # Inference on test data
+    print("🔍 Running inference...")
+    predictions = make_predictions(model, df_test_cleaned)
+
+    # Save predictions
+    output_path = os.path.join(BASE_PATH, 'submission.csv')
+    predictions.to_csv(output_path, index=False)
+    print(f"✅ Predictions saved to {output_path}")
 
 if __name__ == "__main__":
     main()
