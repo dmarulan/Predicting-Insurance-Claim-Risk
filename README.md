@@ -8,7 +8,8 @@ Develop a robust predictive model to identify high-risk drivers and help insuran
 ## 📊 Dataset Overview
 - **Target**: Binary indicator of whether a claim was made.
 - **Features**: Anonymized categorical, binary, and continuous variables.
-- **Size**: 595,212 rows, 57 columns
+- **Training Size**: 595,212 rows, 57 columns
+- **Testing Size**: 892,816 rows, 57 columns
 
 ## Load the dataset (via Google Colab)
 
