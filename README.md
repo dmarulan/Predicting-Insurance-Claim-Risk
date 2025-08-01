@@ -10,6 +10,14 @@ Develop a robust predictive model to identify high-risk drivers and help insuran
 - **Features**: Anonymized categorical, binary, and continuous variables.
 - **Size**: 595,212 rows, 57 columns
 
+## Load the dataset (via Google Colab)
+
+Due to size constraints, the dataset is not stored in this GitHub repo.  
+You can:
+
+- Manually upload `train.csv` and `test.csv` to your Colab environment, **or**
+- Mount your Google Drive and store files in `/content/drive/MyDrive/...`.
+
 ## 🔍 Project Steps
 1. **Exploratory Data Analysis (EDA)**
 2. **Data Cleaning & Imputation**
@@ -36,7 +44,7 @@ Develop a robust predictive model to identify high-risk drivers and help insuran
 ## 📂 Structure
 ```
 insurance-risk-prediction/
-├── data/              # Raw & processed data
+
 ├── models/ # Saved model
 ├── notebooks/         # EDA & model development
 ├── src/ # Core modular ML code
