@@ -22,7 +22,6 @@ Develop a robust predictive model to identify high-risk drivers and help insuran
 - AUC-ROC
 - F1 Score
 - Precision/Recall
-- Log Loss
 
 ## 💡 Business Impact
 - Improve claim forecasting accuracy
@@ -38,10 +37,14 @@ Develop a robust predictive model to identify high-risk drivers and help insuran
 ```
 insurance-risk-prediction/
 ├── data/              # Raw & processed data
+├── models/ # Saved model
 ├── notebooks/         # EDA & model development
-├── src/               # Feature engineering & training scripts
-├── models/            # Trained models
-├── reports/           # Evaluation and plots
+├── src/ # Core modular ML code
+│ ├── preprocess.py
+│ ├── model_training.py
+│ ├── utils.py
+│ └── inference.py
+├── main.py/           
 ├── requirements.txt   # Project library dependencies
 └── README.md
 ```
@@ -49,3 +52,6 @@ insurance-risk-prediction/
 ---
 
 **Author:** Daniel E. Marulanda  
+Ph.D. Candidate – Industrial & Systems Engineering
+Machine Learning Engineer | Data Scientist
+Bilingual: English 🇺🇸 & Spanish
