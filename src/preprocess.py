@@ -7,11 +7,27 @@ from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer
 import os
 
-def load_data(train_path='data/train.csv', test_path='data/test.csv'):
-    """Load the training and test datasets."""
-    train = pd.read_csv(train_path)
-    test = pd.read_csv(test_path)
-    return train, test
+# Optional: Detect if running on Google Colab
+try:
+    import google.colab
+    IN_COLAB = True
+except ImportError:
+    IN_COLAB = False
+
+# Mount Google Drive if on Colab
+if IN_COLAB:
+    from google.colab import drive
+    drive.mount('/content/drive')
+    DATA_PATH = '/content/drive/MyDrive/Insurance_Claims_Porto_Seguro/'
+else:
+    DATA_PATH = './data/'  # Local fallback
+
+# Now define train and test paths
+TRAIN_PATH = os.path.join(DATA_PATH, 'train.csv')
+TEST_PATH = os.path.join(DATA_PATH, 'test.csv')
+
+df_train = pd.read_csv(TRAIN_PATH)
+df_test = pd.read_csv(TEST_PATH)
 
 def get_feature_types(df):
     """Identify numerical and categorical columns (based on naming convention)."""
