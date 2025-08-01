@@ -1,95 +1,62 @@
-import pandas as pd
-import numpy as np
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
-from sklearn.compose import ColumnTransformer
-from sklearn.pipeline import Pipeline
-from sklearn.impute import SimpleImputer
 import os
 
-# Optional: Detect if running on Google Colab
+# Detect if running on Google Colab
 try:
     import google.colab
     IN_COLAB = True
 except ImportError:
     IN_COLAB = False
 
-# Mount Google Drive if on Colab
+# Mount Google Drive and set data path
 if IN_COLAB:
     from google.colab import drive
     drive.mount('/content/drive')
-    DATA_PATH = '/content/drive/MyDrive/Insurance_Claims_Porto_Seguro/'
+    BASE_PATH = '/content/drive/MyDrive/your_project_directory'
 else:
-    DATA_PATH = './data/'  # Local fallback
+    BASE_PATH = '.'
 
-# Now define train and test paths
+# Set paths for data and model output
+DATA_PATH = os.path.join(BASE_PATH, 'data')
+MODEL_OUTPUT_PATH = os.path.join(BASE_PATH, 'models')
+os.makedirs(MODEL_OUTPUT_PATH, exist_ok=True)
+
 TRAIN_PATH = os.path.join(DATA_PATH, 'train.csv')
 TEST_PATH = os.path.join(DATA_PATH, 'test.csv')
 
-df_train = pd.read_csv(TRAIN_PATH)
-df_test = pd.read_csv(TEST_PATH)
+# Import custom modules
+from src.preprocess.data_loader import load_data
+from src.preprocess.cleaning import clean_data
+from src.utils import evaluate_model
+from src.model_training import train_model
+from src.inference import make_predictions
 
-def get_feature_types(df):
-    """Identify numerical and categorical columns (based on naming convention)."""
-    cat_features = [col for col in df.columns if '_cat' in col]
-    bin_features = [col for col in df.columns if '_bin' in col]
-    num_features = [col for col in df.columns if col not in cat_features + bin_features + ['id', 'target']]
-    return num_features, cat_features, bin_features
+def main():
+    print("Starting Machine Learning pipeline...")
 
-def build_preprocessing_pipeline(num_features, cat_features, bin_features):
-    """Create a preprocessing pipeline for numerical and categorical features."""
+    # Load data
+    print("Loading data...")
+    df_train, df_test = load_data(TRAIN_PATH, TEST_PATH)
 
-    # Numerical pipeline
-    num_pipeline = Pipeline([
-        ('imputer', SimpleImputer(strategy='median')),
-        ('scaler', StandardScaler())
-    ])
+    # Clean data
+    print("Cleaning data...")
+    df_train_cleaned, df_test_cleaned = clean_data(df_train, df_test)
 
-    # Categorical pipeline (one-hot encoding after filling -1 with most frequent)
-    cat_pipeline = Pipeline([
-        ('imputer', SimpleImputer(strategy='most_frequent')),
-        ('onehot', OneHotEncoder(handle_unknown='ignore', sparse=False))
-    ])
+    # Train model
+    print("Training model...")
+    model, X_valid, y_valid = train_model(df_train_cleaned)
 
-    # Binary features: just impute with most frequent (no scaling needed)
-    bin_pipeline = Pipeline([
-        ('imputer', SimpleImputer(strategy='most_frequent'))
-    ])
+    # Evaluate model
+    print("Evaluating model...")
+    evaluate_model(model, X_valid, y_valid)
 
-    preprocessor = ColumnTransformer([
-        ('num', num_pipeline, num_features),
-        ('cat', cat_pipeline, cat_features),
-        ('bin', bin_pipeline, bin_features)
-    ])
+    # Inference on test data
+    print("Running inference...")
+    predictions = make_predictions(model, df_test_cleaned)
 
-    return preprocessor
+    # Save predictions
+    output_path = os.path.join(BASE_PATH, 'submission.csv')
+    predictions.to_csv(output_path, index=False)
+    print(f"✅ Predictions saved to {output_path}")
 
-def preprocess_data(train, test):
-    """Preprocess the data using a pipeline."""
-    num_features, cat_features, bin_features = get_feature_types(train)
-
-    # Drop ID columns and store them separately
-    train_ids = train['id']
-    test_ids = test['id']
-    y = train['target']
-
-    train = train.drop(['id', 'target'], axis=1)
-    test = test.drop(['id'], axis=1)
-
-    preprocessor = build_preprocessing_pipeline(num_features, cat_features, bin_features)
-    X_train_processed = preprocessor.fit_transform(train)
-    X_test_processed = preprocessor.transform(test)
-
-    return X_train_processed, X_test_processed, y, train_ids, test_ids, preprocessor
-
-def save_processed_data(X_train, X_test, y, out_dir='data/processed'):
-    """Save the processed data as NumPy arrays."""
-    os.makedirs(out_dir, exist_ok=True)
-    np.save(os.path.join(out_dir, 'X_train.npy'), X_train)
-    np.save(os.path.join(out_dir, 'X_test.npy'), X_test)
-    np.save(os.path.join(out_dir, 'y_train.npy'), y)
-
-if __name__ == '__main__':
-    train, test = load_data()
-    X_train, X_test, y, train_ids, test_ids, preprocessor = preprocess_data(train, test)
-    save_processed_data(X_train, X_test, y)
+if __name__ == "__main__":
+    main()
