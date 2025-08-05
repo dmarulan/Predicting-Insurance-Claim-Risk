@@ -19,10 +19,10 @@ def run_inference(model_path: str, test_path: str, output_path: str = "predictio
         print(f"[ERROR] Failed to read test file: {e}")
         return
 
-    # # Ensure 'id' column exists
-    # if "id" not in test_df.columns:
-    #     print("[ERROR] 'id' column not found in test data.")
-    #     return
+    # Ensure 'id' column exists
+    if "d" not in test_df.columns:
+        print("[ERROR] 'd' column not found in test data.")
+        return
 
     # Create a dummy train DataFrame with matching columns for cleaning
     dummy_train_df = pd.DataFrame(columns=test_df.columns.tolist() + ["target"])
@@ -41,7 +41,7 @@ def run_inference(model_path: str, test_path: str, output_path: str = "predictio
         return
 
     results = pd.DataFrame({
-        "id": test_df.index,  # Use the actual ID column
+        "id": test_df['d'],  # Use the actual ID column
         "prediction": predictions
     })
 
