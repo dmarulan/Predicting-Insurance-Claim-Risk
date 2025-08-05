@@ -19,7 +19,7 @@ def main(args):
     df = load_and_prepare_data(args.train_path)
 
     # Split features and target
-    X = df.drop(columns=["target"])
+    X = df.drop(columns=["target", "id"])
     y = df["target"]
 
     # Split into train and validation sets
