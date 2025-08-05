@@ -13,9 +13,18 @@ def run_inference(model_path: str, test_path: str, output_path: str = "predictio
         output_path (str): File path where predictions will be saved.
     """
     print("[INFO] Loading test dataset...")
-    test_df = pd.read_csv(test_path)
+    try:
+        test_df = pd.read_csv(test_path)
+    except Exception as e:
+        print(f"[ERROR] Failed to read test file: {e}")
+        return
 
-    # Creating a dummy train DataFrame for cleaning structure
+    # Ensure 'id' column exists
+    if "id" not in test_df.columns:
+        print("[ERROR] 'id' column not found in test data.")
+        return
+
+    # Create a dummy train DataFrame with matching columns for cleaning
     dummy_train_df = pd.DataFrame(columns=test_df.columns.tolist() + ["target"])
 
     print("[INFO] Cleaning test dataset...")
@@ -25,10 +34,14 @@ def run_inference(model_path: str, test_path: str, output_path: str = "predictio
     model = joblib.load(model_path)
 
     print("[INFO] Running predictions...")
-    predictions = model.predict(cleaned_test)
+    try:
+        predictions = model.predict(cleaned_test)
+    except Exception as e:
+        print(f"[ERROR] Prediction failed: {e}")
+        return
 
     results = pd.DataFrame({
-        "id": test_df.index,
+        "id": test_df["id"],  # Use the actual ID column
         "prediction": predictions
     })
 
