@@ -42,6 +42,11 @@ def train_model(X_train, y_train, X_valid, y_valid):
             verbose=False
         )
 
+    # Compute and print AUC on validation set
+    y_valid_pred_proba = model.predict_proba(X_valid)[:, 1]
+    val_auc = roc_auc_score(y_valid, y_valid_pred_proba)
+    print(f"[INFO] Validation AUC: {val_auc:.4f}")
+    
     return model
 
 def evaluate_model(model, X_valid, y_valid):
