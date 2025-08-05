@@ -1,51 +1,58 @@
 import pandas as pd
 import joblib
-from src.preprocess.cleaning import clean_data
+import os
 
-
-def run_inference(model_path: str, test_path: str, output_path: str = "predictions.csv"):
-    """
-    Loads the trained model and performs inference on test data.
-
-    Args:
-        model_path (str): Path to the trained model .pkl file.
-        test_path (str): Path to the test CSV file.
-        output_path (str): File path where predictions will be saved.
-    """
-    print("[INFO] Loading test dataset...")
-    try:
-        test_df = pd.read_csv(test_path, encoding='latin1', engine='python', on_bad_lines='skip')
-    except Exception as e:
-        print(f"[ERROR] Failed to read test file: {e}")
-        return
-
-    # Ensure 'id' column exists
-    if "id" not in test_df.columns:
-        print("[ERROR] 'id' column not found in test data.")
-        return
-
-    # Create a dummy train DataFrame with matching columns for cleaning
-    dummy_train_df = pd.DataFrame(columns=test_df.columns.tolist() + ["target"])
-
-    print("[INFO] Cleaning test dataset...")
-    _, cleaned_test = clean_data(dummy_train_df, test_df)
-
-    print("[INFO] Loading trained model...")
+def load_model(model_path='models/xgb_model_tuned.pkl'):
+    """Load a trained XGBoost model from disk"""
+    if not os.path.exists(model_path):
+        raise FileNotFoundError(f"Model not found at {model_path}")
     model = joblib.load(model_path)
+    print(f"[INFO] Loaded model from: {model_path}")
+    return model
 
-    print("[INFO] Running predictions...")
-    try:
-        predictions = model.predict(cleaned_test)
-    except Exception as e:
-        print(f"[ERROR] Prediction failed: {e}")
-        return
+def load_test_data(test_data_path='data/test_data.csv'):
+    """Load test data for inference"""
+    if not os.path.exists(test_data_path):
+        raise FileNotFoundError(f"Test data not found at {test_data_path}")
+    data = pd.read_csv(test_data_path)
+    print(f"[INFO] Loaded test data with shape: {data.shape}")
+    return data
 
+def preprocess_test_data(data):
+    """Preprocess test data before prediction"""
+    if "id" in data.columns:
+        ids = data["id"]
+        features = data.drop(columns=["id"])
+    else:
+        ids = pd.Series(range(len(data)), name="id")
+        features = data
+    return ids, features
+
+def predict(model, features):
+    """Generate predicted probabilities and binary labels"""
+    y_pred_proba = model.predict_proba(features)[:, 1]
+    y_pred_binary = (y_pred_proba >= 0.5).astype(int)
+    return y_pred_proba, y_pred_binary
+
+def save_predictions(ids, y_pred_proba, y_pred_binary, output_path='results/predictions.csv'):
+    """Save predictions to a CSV file"""
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
     results = pd.DataFrame({
-        "id": test_df['id'],  # Use the actual ID column
-        "prediction": predictions
+        "id": ids,
+        "predicted_probability": y_pred_proba,
+        "predicted_label": y_pred_binary
     })
-
     results.to_csv(output_path, index=False)
-    print(f"[INFO] Predictions saved to {output_path}")
-
+    print(f"[INFO] Saved predictions to: {output_path}")
     return results
+
+def main():
+    model = load_model('models/xgb_model_tuned.pkl')
+    test_data = load_test_data('data/test_data.csv')
+    ids, features = preprocess_test_data(test_data)
+    y_pred_proba, y_pred_binary = predict(model, features)
+    results = save_predictions(ids, y_pred_proba, y_pred_binary)
+    print(results.head())
+
+if __name__ == "__main__":
+    main()
