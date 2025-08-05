@@ -12,7 +12,7 @@ def load_data(data_path):
 
 def train_model(X_train, y_train, X_valid, y_valid):
     """Train an XGBoost model and return the trained model"""
-        model = XGBClassifier(
+    model = XGBClassifier(
         n_estimators=500,
         learning_rate=0.05,
         max_depth=5,
