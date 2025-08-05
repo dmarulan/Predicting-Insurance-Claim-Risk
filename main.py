@@ -1,11 +1,13 @@
 import argparse
-from src.preprocess import load_and_clean_data
+from src.preprocess.data_loader import load_data
+from src.preprocess.cleaning import clean_data
 from src.model_training import train_model
 from src.inference import run_inference
 
 def main(train_path, test_path, model_path, predictions_path):
     print("[INFO] Loading and cleaning training dataset...")
-    X_train, y_train = load_and_clean_data(train_path, is_train=True)
+    df_train = load_data(train_path)
+    X_train, y_train = clean_data(df_train, is_train=True)
 
     print("[INFO] Training model...")
     model = train_model(X_train, y_train, model_path)
