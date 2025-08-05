@@ -1,7 +1,12 @@
 import pandas as pd
 import numpy as np
+import os
+import joblib
+import matplotlib.pyplot as plt
+import seaborn as sns
+
 from collections import Counter
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, RandomizedSearchCV
 from sklearn.metrics import (
     roc_auc_score,
     recall_score,
@@ -10,52 +15,62 @@ from sklearn.metrics import (
     confusion_matrix
 )
 from xgboost import XGBClassifier
-import joblib
-import os
-import matplotlib.pyplot as plt
-import seaborn as sns
 
 def load_data(data_path):
-    """Load preprocessed data"""
-    print(f"[INFO] Loading data from: {data_path}")
+    """Load preprocessed dataset"""
     return pd.read_csv(data_path)
 
-def train_model(X_train, y_train, X_valid, y_valid):
-    """Train an XGBoost model using sample_weight for class imbalance"""
-
-    # Calculate class weights manually
+def compute_sample_weights(y_train):
+    """Compute sample weights for class imbalance"""
     counter = Counter(y_train)
     total = sum(counter.values())
     class_weights = {cls: total / count for cls, count in counter.items()}
-    print(f"[INFO] Class distribution: {dict(counter)}")
-    print(f"[INFO] Class weights: {class_weights}")
+    sample_weights = y_train.map(class_weights)
+    print(f"[INFO] Sample weights applied. Class distribution: {dict(counter)}")
+    return sample_weights
 
-    # Assign a weight to each training sample
-    sample_weight = y_train.map(class_weights)
+def tune_hyperparameters(X_train, y_train, sample_weights):
+    """Perform RandomizedSearchCV to tune hyperparameters with sample_weight"""
+    param_grid = {
+        'n_estimators': [100, 300, 500, 700],
+        'max_depth': [3, 5, 7, 10],
+        'learning_rate': [0.01, 0.05, 0.1, 0.2],
+        'subsample': [0.6, 0.8, 1.0],
+        'colsample_bytree': [0.6, 0.8, 1.0],
+        'gamma': [0, 1, 5],
+        'min_child_weight': [1, 3, 5],
+        'reg_alpha': [0, 1, 5],
+        'reg_lambda': [1, 5, 10],
+    }
 
-    model = XGBClassifier(
-        n_estimators=500,
-        learning_rate=0.05,
-        max_depth=5,
-        subsample=0.8,
-        colsample_bytree=0.8,
+    base_model = XGBClassifier(
+        objective='binary:logistic',
         use_label_encoder=False,
-        eval_metric="auc",
+        eval_metric='auc',
+        random_state=42,
+        n_jobs=-1
+    )
+
+    random_search = RandomizedSearchCV(
+        estimator=base_model,
+        param_distributions=param_grid,
+        n_iter=25,
+        scoring='roc_auc',
+        cv=3,
+        verbose=2,
+        n_jobs=-1,
         random_state=42
     )
 
-    model.fit(
-        X_train,
-        y_train,
-        sample_weight=sample_weight,
-        eval_set=[(X_valid, y_valid)],
-        verbose=False
-    )
+    print("[INFO] Starting hyperparameter tuning...")
+    random_search.fit(X_train, y_train, sample_weight=sample_weights)
+    print("[INFO] Best parameters found:")
+    print(random_search.best_params_)
 
-    return model
+    return random_search.best_estimator_
 
 def evaluate_model(model, X_valid, y_valid):
-    """Evaluate the model on the validation set with multiple metrics"""
+    """Evaluate model performance on validation set"""
     y_pred_proba = model.predict_proba(X_valid)[:, 1]
     y_pred_binary = model.predict(X_valid)
 
@@ -69,7 +84,7 @@ def evaluate_model(model, X_valid, y_valid):
     print(f"[RESULT] F1 Score: {f1:.4f}")
     print(f"[RESULT] F2 Score: {f2:.4f}")
 
-    # Plot confusion matrix
+    # Confusion Matrix
     cm = confusion_matrix(y_valid, y_pred_binary)
     sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
     plt.title("Confusion Matrix")
@@ -79,30 +94,26 @@ def evaluate_model(model, X_valid, y_valid):
 
     return auc
 
-def save_model(model, output_path='models/xgb_model.pkl'):
-    """Save the trained model to disk"""
+def save_model(model, output_path='models/xgb_model_tuned.pkl'):
+    """Save trained model to disk"""
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     joblib.dump(model, output_path)
     print(f"[INFO] Model saved to: {output_path}")
 
 def main():
-    # Load cleaned dataset
-    data = load_data("data/processed_data.csv")  # Update path as needed
+    data_path = "data/processed_data.csv"
+    data = load_data(data_path)
+
     X = data.drop(columns=["target", "id"])
     y = data["target"]
 
-    # Train-validation split with stratification
     X_train, X_valid, y_train, y_valid = train_test_split(
-        X, y, test_size=0.2, random_state=42, stratify=y
+        X, y, test_size=0.2, stratify=y, random_state=42
     )
 
-    # Train the model
-    model = train_model(X_train, y_train, X_valid, y_valid)
-
-    # Evaluate the model
+    sample_weights = compute_sample_weights(y_train)
+    model = tune_hyperparameters(X_train, y_train, sample_weights)
     evaluate_model(model, X_valid, y_valid)
-
-    # Save the model
     save_model(model)
 
 if __name__ == "__main__":
