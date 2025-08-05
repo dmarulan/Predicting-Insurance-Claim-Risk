@@ -27,7 +27,7 @@ def train_model(X_train, y_train, X_valid, y_valid):
         model.fit(
             X_train,
             y_train,
-            early_stopping_rounds=10,
+            # early_stopping_rounds=10,
             eval_set=[(X_valid, y_valid)],
             verbose=False
         )
@@ -38,7 +38,7 @@ def train_model(X_train, y_train, X_valid, y_valid):
             X_train,
             y_train,
             eval_set=[(X_valid, y_valid)],
-            callbacks=[EarlyStopping(rounds=10)],
+            # callbacks=[EarlyStopping(rounds=10)],
             verbose=False
         )
 
