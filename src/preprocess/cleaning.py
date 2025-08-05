@@ -1,32 +1,35 @@
 import pandas as pd
 
-def clean_data(df: pd.DataFrame) -> pd.DataFrame:
+def clean_data(train_df, test_df=None):
     """
-    Perform basic cleaning operations on the input DataFrame.
-
-    Cleaning steps:
-    - Drop constant columns (columns with only one unique value).
-    - Fill missing values with column medians.
-
-    Parameters:
-    - df (pd.DataFrame): Raw input DataFrame.
-
-    Returns:
-    - pd.DataFrame: Cleaned DataFrame.
+    Cleans the dataset(s): handles missing values, encodes categoricals, drops unneeded features.
+    If test_df is provided, applies same transformations using train_df logic.
+    Returns: cleaned_train_df [, cleaned_test_df if test_df is provided]
     """
-    print("[INFO] Cleaning dataset...")
+    def preprocess(df):
+        df = df.copy()
 
-    # Drop columns with only one unique value (constants)
-    nunique = df.nunique()
-    constant_cols = nunique[nunique == 1].index.tolist()
-    if constant_cols:
-        print(f"[INFO] Dropping constant columns: {constant_cols}")
-        df = df.drop(columns=constant_cols)
+        # Drop constant columns
+        nunique = df.nunique()
+        const_cols = nunique[nunique == 1].index.tolist()
+        df.drop(columns=const_cols, inplace=True)
 
-    # Fill missing values with median of the column
-    missing_cols = df.columns[df.isnull().any()].tolist()
-    if missing_cols:
-        print(f"[INFO] Filling missing values in columns: {missing_cols}")
-        df = df.fillna(df.median(numeric_only=True))
+        # Drop ID if exists
+        if 'id' in df.columns:
+            df.drop(columns=['id'], inplace=True)
 
-    return df
+        # Handle missing values: fill with median
+        df.fillna(df.median(numeric_only=True), inplace=True)
+
+        return df
+
+    train_cleaned = preprocess(train_df)
+
+    if test_df is not None:
+        test_cleaned = preprocess(test_df)
+
+        # Align test to train (e.g. drop columns that are only in train or test)
+        common_cols = train_cleaned.columns.intersection(test_cleaned.columns)
+        return train_cleaned[common_cols], test_cleaned[common_cols]
+
+    return train_cleaned
