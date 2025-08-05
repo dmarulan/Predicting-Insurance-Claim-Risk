@@ -14,9 +14,9 @@ def clean_data(train_df, test_df=None):
         const_cols = nunique[nunique == 1].index.tolist()
         df.drop(columns=const_cols, inplace=True)
 
-        # Drop ID if exists
-        if 'id' in df.columns:
-            df.drop(columns=['id'], inplace=True)
+        # # Drop ID if exists
+        # if 'id' in df.columns:
+        #     df.drop(columns=['id'], inplace=True)
 
         # Handle missing values: fill with median
         df.fillna(df.median(numeric_only=True), inplace=True)
