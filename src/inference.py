@@ -13,7 +13,7 @@ def run_inference(model_path: str, test_path: str, output_path: str = "predictio
         output_path (str): File path where predictions will be saved.
     """
     print("[INFO] Loading test dataset...")
-    test_df = pd.read_csv(test_path, encoding='ISO-8859-1')
+    test_df = pd.read_csv(test_path)
 
     # Creating a dummy train DataFrame for cleaning structure
     dummy_train_df = pd.DataFrame(columns=test_df.columns.tolist() + ["target"])
