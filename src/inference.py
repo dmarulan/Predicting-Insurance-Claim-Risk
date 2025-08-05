@@ -14,15 +14,15 @@ def run_inference(model_path: str, test_path: str, output_path: str = "predictio
     """
     print("[INFO] Loading test dataset...")
     try:
-        test_df = pd.read_csv(test_path, engine='python', on_bad_lines='skip')
+        test_df = pd.read_csv(test_path, encoding='latin1', engine='python', on_bad_lines='skip')
     except Exception as e:
         print(f"[ERROR] Failed to read test file: {e}")
         return
 
-    # Ensure 'id' column exists
-    if "id" not in test_df.columns:
-        print("[ERROR] 'id' column not found in test data.")
-        return
+    # # Ensure 'id' column exists
+    # if "id" not in test_df.columns:
+    #     print("[ERROR] 'id' column not found in test data.")
+    #     return
 
     # Create a dummy train DataFrame with matching columns for cleaning
     dummy_train_df = pd.DataFrame(columns=test_df.columns.tolist() + ["target"])
@@ -41,7 +41,7 @@ def run_inference(model_path: str, test_path: str, output_path: str = "predictio
         return
 
     results = pd.DataFrame({
-        "id": test_df['id'],  # Use the actual ID column
+        "id": test_df.index,  # Use the actual ID column
         "prediction": predictions
     })
 
