@@ -1,29 +1,32 @@
 import pandas as pd
 
-def clean_data(train_df: pd.DataFrame, test_df: pd.DataFrame):
+def clean_data(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Cleans the training and test dataframes. This may include:
-      - Removing duplicates
-      - Filling missing values
-      - Dropping unnecessary columns
+    Perform basic cleaning operations on the input DataFrame.
 
-    Args:
-        train_df (pd.DataFrame): Raw training dataframe.
-        test_df (pd.DataFrame): Raw test dataframe.
+    Cleaning steps:
+    - Drop constant columns (columns with only one unique value).
+    - Fill missing values with column medians.
+
+    Parameters:
+    - df (pd.DataFrame): Raw input DataFrame.
 
     Returns:
-        Tuple of cleaned pd.DataFrame: (cleaned_train_df, cleaned_test_df)
+    - pd.DataFrame: Cleaned DataFrame.
     """
-    # Remove duplicate rows
-    train_df = train_df.drop_duplicates()
+    print("[INFO] Cleaning dataset...")
 
-    # Fill missing values with median
-    train_df = train_df.fillna(train_df.median(numeric_only=True))
-    test_df = test_df.fillna(test_df.median(numeric_only=True))
+    # Drop columns with only one unique value (constants)
+    nunique = df.nunique()
+    constant_cols = nunique[nunique == 1].index.tolist()
+    if constant_cols:
+        print(f"[INFO] Dropping constant columns: {constant_cols}")
+        df = df.drop(columns=constant_cols)
 
-    # Drop ID columns if present
-    id_cols = [col for col in train_df.columns if 'id' in col.lower()]
-    train_df = train_df.drop(columns=id_cols, errors='ignore')
-    test_df = test_df.drop(columns=id_cols, errors='ignore')
+    # Fill missing values with median of the column
+    missing_cols = df.columns[df.isnull().any()].tolist()
+    if missing_cols:
+        print(f"[INFO] Filling missing values in columns: {missing_cols}")
+        df = df.fillna(df.median(numeric_only=True))
 
-    return train_df, test_df
+    return df
