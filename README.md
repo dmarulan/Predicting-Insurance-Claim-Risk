@@ -11,7 +11,7 @@ Develop a robust predictive model to identify high-risk drivers and help insuran
 - **Training Size**: 595,212 rows, 57 columns
 - **Testing Size**: 892,816 rows, 57 columns
 
-- The dataset is also very imbalanced. Class distribution: {0: 458814, 1: 17355}
+- The dataset is also very imbalanced. Only ~3.6% of the samples have target = 1. Class distribution: {0: 458814, 1: 17355}
 
 ## Load the dataset (via Google Colab)
 
