@@ -16,11 +16,9 @@ from sklearn.metrics import (
 )
 from xgboost import XGBClassifier
 
-
 def load_data(data_path):
     """Load preprocessed dataset"""
     return pd.read_csv(data_path)
-
 
 def compute_sample_weights(y_train):
     """Compute sample weights for class imbalance"""
@@ -30,7 +28,6 @@ def compute_sample_weights(y_train):
     sample_weights = y_train.map(class_weights)
     print(f"[INFO] Sample weights applied. Class distribution: {dict(counter)}")
     return sample_weights
-
 
 def tune_hyperparameters(X_train, y_train, sample_weights):
     """Perform RandomizedSearchCV to tune hyperparameters with sample_weight"""
@@ -72,7 +69,6 @@ def tune_hyperparameters(X_train, y_train, sample_weights):
 
     return random_search.best_estimator_
 
-
 def evaluate_model(model, X_valid, y_valid):
     """Evaluate model performance on validation set"""
     y_pred_proba = model.predict_proba(X_valid)[:, 1]
@@ -98,17 +94,24 @@ def evaluate_model(model, X_valid, y_valid):
 
     return auc
 
-
 def save_model(model, output_path='models/xgb_model_tuned.pkl'):
     """Save trained model to disk"""
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     joblib.dump(model, output_path)
     print(f"[INFO] Model saved to: {output_path}")
 
+def train_model(X_train, y_train, X_valid, y_valid):
+    """Train the model and evaluate it"""
+    sample_weights = compute_sample_weights(y_train)
+    model = tune_hyperparameters(X_train, y_train, sample_weights)
+    evaluate_model(model, X_valid, y_valid)
+    save_model(model)
+    return model
 
-def train_model(data_path="data/processed_data.csv"):
-    """Main training pipeline"""
+def main():
+    data_path = "data/processed_data.csv"
     data = load_data(data_path)
+
     X = data.drop(columns=["target", "id"])
     y = data["target"]
 
@@ -116,13 +119,7 @@ def train_model(data_path="data/processed_data.csv"):
         X, y, test_size=0.2, stratify=y, random_state=42
     )
 
-    sample_weights = compute_sample_weights(y_train)
-    model = tune_hyperparameters(X_train, y_train, sample_weights)
-    auc = evaluate_model(model, X_valid, y_valid)
-    save_model(model)
-
-    return model, auc
-
+    train_model(X_train, y_train, X_valid, y_valid)
 
 if __name__ == "__main__":
-    train_model()
+    main()
