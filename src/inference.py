@@ -46,13 +46,18 @@ def save_predictions(ids, y_pred_proba, y_pred_binary, output_path='results/pred
     print(f"[INFO] Saved predictions to: {output_path}")
     return results
 
-def main():
-    model = load_model('models/xgb_model_tuned.pkl')
-    test_data = load_test_data('data/test_data.csv')
+def run_inference(model_path='models/xgb_model_tuned.pkl', test_data_path='data/test_data.csv', output_path='results/predictions.csv'):
+    """Main inference function to be imported and run from main.py"""
+    model = load_model(model_path)
+    test_data = load_test_data(test_data_path)
     ids, features = preprocess_test_data(test_data)
     y_pred_proba, y_pred_binary = predict(model, features)
-    results = save_predictions(ids, y_pred_proba, y_pred_binary)
+    results = save_predictions(ids, y_pred_proba, y_pred_binary, output_path)
     print(results.head())
+    return results
+
+def main():
+    run_inference()
 
 if __name__ == "__main__":
     main()
