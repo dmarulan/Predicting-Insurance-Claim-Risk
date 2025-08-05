@@ -2,7 +2,7 @@ import argparse
 import pandas as pd
 from src.preprocess.data_loader import load_data
 from src.preprocess.cleaning import clean_data
-from src.model.train import train_model
+from src.model_training import train_model
 from src.model.inference import run_inference
 
 def main(train_path, test_path, model_path):
