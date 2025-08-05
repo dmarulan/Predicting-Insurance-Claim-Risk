@@ -9,8 +9,8 @@ except ImportError:
 
 # Mount Google Drive and set data path
 if IN_COLAB:
-    from google.colab import drive
-    drive.mount('/content/drive')
+    # from google.colab import drive
+    # drive.mount('/content/drive')
     BASE_PATH = '/content/drive/MyDrive/Insurance_Claims_Porto_Seguro'
 else:
     BASE_PATH = '.'
