@@ -55,6 +55,7 @@ def save_model(model, output_path='models/xgb_model.pkl'):
     """Save the trained model to disk"""
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     joblib.dump(model, output_path)
+    print(f"[INFO] Model saved to: {output_path}")
 
 def main():
     data = load_data("data/processed_data.csv")  # Adjust path as needed
