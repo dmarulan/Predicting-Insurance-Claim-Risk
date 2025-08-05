@@ -1,6 +1,6 @@
 import argparse
 import pandas as pd
-from src.data_preprocessing import clean_data
+from src.preprocess.cleaning import clean_data
 from src.model_training import train_model, evaluate_model, save_model
 from src.inference import run_inference
 
