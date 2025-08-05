@@ -12,22 +12,36 @@ def load_data(data_path):
 
 def train_model(X_train, y_train, X_valid, y_valid):
     """Train an XGBoost model and return the trained model"""
-    model = xgb.XGBClassifier(
+        model = XGBClassifier(
         n_estimators=500,
-        max_depth=4,
         learning_rate=0.05,
+        max_depth=5,
         subsample=0.8,
         colsample_bytree=0.8,
         use_label_encoder=False,
-        eval_metric='auc'
+        eval_metric="auc",
+        random_state=42
     )
 
-    model.fit(
-        X_train, y_train,
-        eval_set=[(X_valid, y_valid)],
-        early_stopping_rounds=50,
-        verbose=True
-    )
+    try:
+        model.fit(
+            X_train,
+            y_train,
+            early_stopping_rounds=10,
+            eval_set=[(X_valid, y_valid)],
+            verbose=False
+        )
+    except TypeError:
+        # Handle newer XGBoost versions with callback interface
+        from xgboost.callback import EarlyStopping
+        model.fit(
+            X_train,
+            y_train,
+            eval_set=[(X_valid, y_valid)],
+            callbacks=[EarlyStopping(rounds=10)],
+            verbose=False
+        )
+
     return model
 
 def evaluate_model(model, X_valid, y_valid):
