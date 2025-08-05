@@ -26,8 +26,9 @@ You can:
 2. **Data Cleaning & Imputation**
 3. **Feature Engineering**
 4. **Model Training & Evaluation** (XGBoost)
-5. **Interpretability with SHAP**
-6. **(Optional)** Deployment via Streamlit
+5. ***Hyperparameter Tunning (Random Search)
+6. **Interpretability with SHAP**
+7. **(Optional)** Deployment via Streamlit
 
 ## 📈 Evaluation Metrics
 - AUC-ROC
