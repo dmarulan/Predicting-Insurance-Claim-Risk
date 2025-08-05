@@ -50,8 +50,8 @@ from sklearn.model_selection import train_test_split
 
 from src.preprocess.data_loader import load_data
 from src.preprocess.cleaning import clean_data
-from src.model.train import train_model
-from src.model.inference import run_inference
+from src.model_training import train_model
+from src.inference import run_inference
 
 def load_and_prepare_data(train_path):
     print("[INFO] Loading and cleaning training dataset...")
