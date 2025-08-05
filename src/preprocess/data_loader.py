@@ -1,18 +1,23 @@
 import pandas as pd
 
-def load_data(train_path: str, test_path: str):
+def load_data(path: str) -> pd.DataFrame:
     """
-    Loads training and testing datasets from the given paths.
+    Load a CSV file from the given path.
 
-    Args:
-        train_path (str): Path to the training CSV file.
-        test_path (str): Path to the testing CSV file.
+    Parameters:
+    - path (str): Path to the CSV file.
 
     Returns:
-        Tuple of pd.DataFrame: (train_df, test_df)
+    - pd.DataFrame: Loaded data as a pandas DataFrame.
     """
-    train_df = pd.read_csv(train_path)
-    test_df = pd.read_csv(test_path)
+    try:
+        df = pd.read_csv(path)
+        print(f"[INFO] Successfully loaded data from: {path}")
+        return df
+    except FileNotFoundError:
+        print(f"[ERROR] File not found: {path}")
+        raise
+    except Exception as e:
+        print(f"[ERROR] Failed to load data from {path}: {e}")
+        raise
 
-    print(f"Train shape: {train_df.shape}, Test shape: {test_df.shape}")
-    return train_df, test_df
