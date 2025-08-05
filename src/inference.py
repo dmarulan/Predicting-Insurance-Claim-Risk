@@ -41,7 +41,7 @@ def run_inference(model_path: str, test_path: str, output_path: str = "predictio
         return
 
     results = pd.DataFrame({
-        "id": test_df["id"],  # Use the actual ID column
+        "id": test_df.index,  # Use the actual ID column
         "prediction": predictions
     })
 
