@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_auc_score
-import xgboost as xgb
+from xgboost import XGBClassifier
 import joblib
 import os
 
