@@ -14,7 +14,7 @@ def run_inference(model_path: str, test_path: str, output_path: str = "predictio
     """
     print("[INFO] Loading test dataset...")
     try:
-        test_df = pd.read_csv(test_path)
+        test_df = pd.read_csv(test_path,  encoding='latin1')
     except Exception as e:
         print(f"[ERROR] Failed to read test file: {e}")
         return
