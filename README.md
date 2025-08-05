@@ -65,11 +65,11 @@ insurance-risk-prediction/
 While the current model utilizes sample weighting and hyperparameter tuning to mitigate class imbalance, there are several opportunities for further enhancement. Future work can explore advanced imbalance-handling techniques and additional modeling improvements:
 
 1. Advanced Imbalanced Learning Techniques
-SMOTE (Synthetic Minority Over-sampling Technique): Generate synthetic examples for the minority class to balance the training data, especially when there is significant underrepresentation.
+- SMOTE (Synthetic Minority Over-sampling Technique): Generate synthetic examples for the minority class to balance the training data, especially when there is significant underrepresentation.
 
-ADASYN: An extension of SMOTE that focuses on generating synthetic data where the model performs poorly.
+- ADASYN: An extension of SMOTE that focuses on generating synthetic data where the model performs poorly.
 
-Random Under-Sampling / Cluster Centroids: Reduce the number of majority class examples using techniques like Tomek Links or near-miss sampling to better separate classes.
+- Random Under-Sampling / Cluster Centroids: Reduce the number of majority class examples using techniques like Tomek Links or near-miss sampling to better separate classes.
 
 2. Threshold Optimization
 The default threshold of 0.5 may not be optimal. Future versions of the model can apply precision-recall curve analysis to identify a threshold that maximizes a custom metric (e.g., F2-score or cost-based metric).
