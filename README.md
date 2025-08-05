@@ -30,6 +30,7 @@ You can:
 ## 📈 Evaluation Metrics
 - AUC-ROC
 - F1 Score
+- F2 Score
 - Precision/Recall
 
 ## 💡 Business Impact
